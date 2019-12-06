@@ -67,7 +67,7 @@ class Computer:
                 continue
 
             cursor_move = instruction.execute(raw[1])
-            cursor = (cursor_move if cursor_move else cursor + len(instruction))
+            cursor = (cursor_move if cursor_move is not None else cursor + len(instruction))
         print(self)
 
     def read_value(self, position: int) -> int:
@@ -104,7 +104,7 @@ class MultiplyInstruction(Instruction):
     def execute(self, modes: [bool]) -> None:
         parameters = generate_parameters(self._computer, self._start_position, modes, 2)
         self._computer.update_value(self._computer.read_value(self._start_position + 3),
-                                    parameters[0] * parameters[1])
+                                    int(parameters[0] * parameters[1]))
 
     def __len__(self):
         return 4
@@ -146,7 +146,7 @@ class JumpIfTrueInstruction(Instruction):
 
     def execute(self, modes: [bool]) -> int:
         parameters = generate_parameters(self._computer, self._start_position, modes, 2)
-        return parameters[1] if parameters[0] != 0 else 0
+        return parameters[1] if parameters[0] != 0 else None
 
     def __len__(self):
         return 3
@@ -160,7 +160,7 @@ class JumpIfFalseInstruction(Instruction):
 
     def execute(self, modes: [bool]) -> int:
         parameters = generate_parameters(self._computer, self._start_position, modes, 2)
-        return parameters[1] if parameters[0] == 0 else 0
+        return parameters[1] if parameters[0] == 0 else None
 
     def __len__(self):
         return 3
