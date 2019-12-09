@@ -13,9 +13,6 @@ def generate_parameters(computer: 'Computer', start: int, modes: [bool], count: 
 
 
 def get_relative(computer: 'Computer', start, j):
-    # print(f'Relative: {computer.relative} + {computer.read_value(start + 1 + j)} '
-    #        f'= {computer.relative + computer.read_value(start + 1 + j)} -> '
-    #        f'{computer.read_value(computer.relative + computer.read_value(start + 1 + j))}')
     return computer.read_value(computer.relative + computer.read_value(start + 1 + j))
 
 
@@ -78,8 +75,6 @@ class Computer:
                 cursor += 1
                 continue
 
-            # print(instruction)
-            # print(computer._instructions)
             cursor_move = instruction.execute(raw[1])
             cursor = (cursor_move if cursor_move is not None else cursor + len(instruction))
         print(self)
@@ -87,7 +82,6 @@ class Computer:
     def read_value(self, position: int) -> int:
         if position < 0:
             print(f'ERROR: tried to access invalid slot: {position}')
-            5 / 0
             return 0
 
         if position < len(self._instructions):
@@ -98,7 +92,6 @@ class Computer:
     def update_value(self, position: int, value_position: int) -> None:
         if position < 0:
             print(f'ERROR: tried to access invalid slot: {position}')
-            5 / 0
             return
         if position >= len(self._instructions):
             self._instructions.extend([0 for _ in range(0, position - len(self._instructions) + 1)])
