@@ -12,27 +12,11 @@ class Asteroid:
 
     def can_spot(self, other: (int, int), asteroids: {(int, int)}):
         if self.location[0] == other[0]:
-            if self.location[1] >= other[1]:
-                for i in range(other[1] + 1, self.location[1]):
-                    if (self.location[0], i) in asteroids:
-                        return False
-                return True
-            else:
-                for i in range(self.location[1] + 1, other[1]):
-                    if (self.location[0], i) in asteroids:
-                        return False
-                return True
-        if self.location[1] == other[1]:
-            if self.location[0] >= other[0]:
-                for i in range(other[0] + 1, self.location[0]):
-                    if (i, self.location[1]) in asteroids:
-                        return False
-                return True
-            else:
-                for i in range(self.location[0] + 1, other[0]):
-                    if (i, self.location[1]) in asteroids:
-                        return False
-                return True
+            for y in range(min(other[1] + 1, self.location[1] + 1),
+                           max(other[1], self.location[1])):
+                if (self.location[0], y) in asteroids:
+                    return False
+            return True
         else:
             for x in range(min(other[0] + 1, self.location[0] + 1),
                            max(other[0], self.location[0])):
@@ -46,7 +30,7 @@ class Asteroid:
 
     def get_angle(self, location: (int, int)) -> float:
         base = math.atan2(location[0] - self.location[0], location[1] - self.location[1])
-        return base if base > 0 else 2*math.pi + base
+        return base if base > 0 else 2 * math.pi + base
 
     def distance(self, location: (int, int)):
         return math.sqrt(
@@ -94,6 +78,6 @@ with open('input.txt') as file:
                 vaporized += 1
                 if vaporized == 200:
                     print(f'{vaporized}. {target.location}')
-                    print(f'Bet: {100*target.location[0] + target.location[1]}')
+                    print(f'Bet: {100 * target.location[0] + target.location[1]}')
                 targets.remove(target)
                 locations.remove(target.location)
