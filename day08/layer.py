@@ -1,4 +1,4 @@
-from day8.input import ENCODED
+from day08.input import ENCODED
 
 
 def split(encoded: int, width: int, length: int) -> [[str]]:

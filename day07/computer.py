@@ -1,6 +1,6 @@
 import itertools
 
-from day7.input import INSTRUCTIONS
+from day07.input import INSTRUCTIONS
 from intcode.computer import Computer, InputInstruction
 
 

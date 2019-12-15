@@ -1,4 +1,4 @@
-from day6.path import calculate_route
+from day06.path import calculate_route
 
 
 class Orbit:

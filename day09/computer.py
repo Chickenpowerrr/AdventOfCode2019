@@ -1,4 +1,4 @@
-from day9.input import INSTRUCTIONS
+from day09.input import INSTRUCTIONS
 from intcode.computer import Computer, Cell
 
 
