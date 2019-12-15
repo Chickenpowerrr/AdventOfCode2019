@@ -41,5 +41,17 @@ with open('input.txt') as file:
                 target.orbits.append(orbits[dependencies[orbit]])
                 orbits[orbit] = target
 
-print(sum([len(orbits[name].orbits) for name in orbits]))
-print(calculate_route(connections, 'YOU', 'SAN') - 3)
+
+def part1():
+    orbit_count = sum([len(orbits[name].orbits) for name in orbits])
+    print(f'Total orbit count: {orbit_count}')
+
+
+def part2():
+    route_length = calculate_route(connections, 'YOU', 'SAN') - 3
+    print(f'Route length: {route_length}')
+
+
+if __name__ == '__main__':
+    part1()
+    part2()
