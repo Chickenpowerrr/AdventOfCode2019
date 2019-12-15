@@ -36,49 +36,56 @@ class Instruction:
 
 class Computer:
 
-    def __init__(self, instructions: [int], input_handle, output_handle, debug=False):
+    def __init__(self, instructions: [int], input_handle, output_handle, debug=False, relative=0,
+                 cursor=0):
         self._instructions = instructions
-        self.registers: {int: int} = {}
-        self.relative = 0
+
+        self.relative = relative
+        self.cursor = cursor
+
         self.input_handle = input_handle
         self.output_handle = output_handle
+
         self.debug = debug
 
-    def execute(self):
-        cursor: int = 0
-        while cursor < len(self._instructions):
-            raw = parse_raw(self._instructions[cursor])
+    def execute(self, wait_input=False):
+        while self.cursor < len(self._instructions):
+            raw = parse_raw(self._instructions[self.cursor])
             if raw[0] == 1:
-                instruction = AddInstruction(self, cursor)
+                instruction = AddInstruction(self, self.cursor)
             elif raw[0] == 2:
-                instruction = MultiplyInstruction(self, cursor)
+                instruction = MultiplyInstruction(self, self.cursor)
             elif raw[0] == 3:
-                instruction = InputInstruction(self, cursor, self.input_handle)
+                instruction = InputInstruction(self, self.cursor, self.input_handle)
+                if wait_input:
+                    self.cursor += len(instruction)
+                    return instruction, raw[1]
             elif raw[0] == 4:
-                instruction = OutputInstruction(self, cursor, self.output_handle)
+                instruction = OutputInstruction(self, self.cursor, self.output_handle)
             elif raw[0] == 5:
-                instruction = JumpIfTrueInstruction(self, cursor)
+                instruction = JumpIfTrueInstruction(self, self.cursor)
             elif raw[0] == 6:
-                instruction = JumpIfFalseInstruction(self, cursor)
+                instruction = JumpIfFalseInstruction(self, self.cursor)
             elif raw[0] == 7:
-                instruction = LessThanInstruction(self, cursor)
+                instruction = LessThanInstruction(self, self.cursor)
             elif raw[0] == 8:
-                instruction = EqualsInstructions(self, cursor)
+                instruction = EqualsInstructions(self, self.cursor)
             elif raw[0] == 9:
-                instruction = AdjustRelativeInstruction(self, cursor)
+                instruction = AdjustRelativeInstruction(self, self.cursor)
             elif raw[0] == 99:
                 if self.debug:
                     print('Bye!')
                     print(self)
                 return
             else:
-                print(f'ERROR: could not read: {cursor} {raw}')
+                print(f'ERROR: could not read: {self.cursor} {raw}')
                 if self.debug:
                     print(self)
                 sys.exit()
 
             cursor_move = instruction.execute(raw[1])
-            cursor = (cursor_move if cursor_move is not None else cursor + len(instruction))
+            self.cursor = (
+                cursor_move if cursor_move is not None else self.cursor + len(instruction))
         if self.debug:
             print(self)
 
@@ -100,6 +107,10 @@ class Computer:
             self._instructions.extend([0 for _ in range(0, position - len(self._instructions) + 1)])
 
         self._instructions[position] = value_position
+
+    def copy(self):
+        return Computer(self._instructions.copy(), self.input_handle, self.output_handle,
+                        self.debug, self.relative, self.cursor)
 
     def __str__(self):
         return str(self._instructions)
@@ -153,6 +164,9 @@ class InputInstruction(Instruction):
             if len(modes) == 0 or modes[0] != 2 else \
             self._computer.relative + self._computer.read_value(self._start_position + 1)
         self._computer.update_value(position, self.input_handle())
+
+    def copy(self):
+        return InputInstruction(self._computer.copy(), self._start_position, self.input_handle)
 
     def __len__(self):
         return 2
