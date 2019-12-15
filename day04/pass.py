@@ -1,4 +1,4 @@
-def is_valid(pass_phrase: str) -> bool:
+def is_valid_1(pass_phrase: str) -> bool:
     last = pass_phrase[0]
     adjunct = False
 
@@ -26,8 +26,22 @@ def is_valid_2(pass_phrase: str) -> bool:
     return adjunct
 
 
-count = 0
-for j in range(356261, 846303):
-    if is_valid_2(str(j)):
-        count += 1
-print(count)
+def part1():
+    count = 0
+    for j in range(356261, 846303):
+        if is_valid_1(str(j)):
+            count += 1
+    print(f'Weak valid passwords: {count}')
+
+
+def part2():
+    count = 0
+    for j in range(356261, 846303):
+        if is_valid_2(str(j)):
+            count += 1
+    print(f'Strong valid passwords: {count}')
+
+
+if __name__ == '__main__':
+    part1()
+    part2()
