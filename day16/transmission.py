@@ -44,7 +44,7 @@ def part1():
     value = NUMBER
     for _ in range(100):
         value = apply_signal(value)
-    print(f'First 8 digits: {int(value[:8])}')
+    print(f'First 8 digits: {value[:8]}')
 
 
 def part2():
