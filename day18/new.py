@@ -165,8 +165,16 @@ class Solver:
     def is_solved(self):
         return len(self.maze.keys) == 0
 
+    def get_covered(self) -> {(((int, int), ...), (int, int)): (int, [(int, int)])}:
+        covered = {}
+        history_places = [line.end for line in self.history]
+        for i in range(len(history_places)):
+            covered[(tuple(sorted(history_places[:i])), history_places[i])] = \
+                (sum(map(len, self.history[:i + 1])), self.history[:i + 1])
+        return covered
+
     def __len__(self):
-        return sum({len(path) for path in self.history})
+        return sum(map(len, self.history))
 
     def __str__(self):
         return ', '.join([str(len(line)) for line in self.history]) + " :: " + ', '.join(
@@ -221,15 +229,12 @@ def read_maze_from_file() -> Maze:
 
 def get_key_paths(maze: Maze) -> {(int, int): {(int, int): Path}}:
     paths = {}
-    i = 1
     for start_coord in maze.keys:
         if maze.cursor in paths:
             paths[maze.cursor][start_coord] = get_path(maze, maze.cursor, start_coord)
         else:
             paths[maze.cursor] = {start_coord: get_path(maze, maze.cursor, start_coord)}
 
-        print(f'Calculated path {i}')
-        i += 1
         for end_coord in maze.keys:
             if start_coord != end_coord:
                 path = get_path(maze, start_coord, end_coord)
@@ -244,6 +249,7 @@ def get_key_paths(maze: Maze) -> {(int, int): {(int, int): Path}}:
 
 def shortest_path(maze: Maze) -> Solver:
     solvers: {int: {Solver}} = {0: {Solver(maze, [], get_key_paths(maze))}}
+    best_paths: {(((int, int), ...), (int, int)): (int, [(int, int)])} = {}
     best_length = 0
     best_route = 0
 
@@ -255,10 +261,27 @@ def shortest_path(maze: Maze) -> Solver:
             for next_target in target.get_next():
                 target_length = len(next_target)
                 if not next_target.is_solved():
-                    if target_length not in solvers:
-                        solvers[target_length] = {next_target}
-                    else:
-                        solvers[target_length].add(next_target)
+                    covered = next_target.get_covered()
+                    better_alternative = False
+                    for piece in covered:
+                        if piece in best_paths:
+                            if best_paths[piece][0] < covered[piece][0]:
+                                better_alternative = True
+                                break
+                            elif best_paths[piece][0] > covered[piece][0]:
+                                best_paths[piece] = covered[piece]
+                            else:
+                                if best_paths[piece][1] != covered[piece][1]:
+                                    better_alternative = True
+                                    break
+                        else:
+                            best_paths[piece] = (covered[piece])
+
+                    if not better_alternative:
+                        if target_length not in solvers:
+                            solvers[target_length] = {next_target}
+                        else:
+                            solvers[target_length].add(next_target)
                 else:
                     if not best_length or target_length < best_length:
                         best_length = target_length
@@ -270,10 +293,8 @@ def shortest_path(maze: Maze) -> Solver:
 def part1():
     maze: Maze = read_maze_from_file()
     maze.generate_lines()
-    # paths = get_key_paths(maze)
     path = shortest_path(maze)
-    print(path)
-    print(len(path))
+    print(f'Shortest path: {len(path)}')
 
 
 def part2():
