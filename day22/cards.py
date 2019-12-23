@@ -121,31 +121,35 @@ class SimulatedDeck:
 
 
 class BackPropagatingDeck:
-    INCREMENTERS: {(int, int): SimulatedIncrementer} = {}
 
-    def __init__(self, cursor: int, cards: int):
-        self.cursor = cursor
+    def __init__(self, cards: int):
         self.cards = cards
+        self.relative_offset = 0
+        self.relative_step_size = 1
+
+    def inverse(self, n: int) -> int:
+        return pow(n, self.cards - 2, self.cards)
 
     def new_stack(self):
-        self.cursor = self.cards - self.cursor - 1
+        self.relative_step_size *= -1
+        self.relative_offset += self.relative_step_size
 
     def cut(self, n: int):
-        if n > 0:
-            if n > self.cards - self.cursor - 1:
-                self.cursor -= self.cards - n
-            else:
-                self.cursor += n
-        else:
-            self.cut(self.cards + n)
+        self.relative_offset += self.relative_step_size * n
 
     def increment(self, n: int):
-        modulo = self.cards % n
-        if (n, modulo) not in self.INCREMENTERS:
-            self.INCREMENTERS[(n, modulo)] = SimulatedIncrementer(n, modulo)
+        self.relative_step_size *= self.inverse(n)
 
-        incrementer = self.INCREMENTERS[(n, modulo)]
-        self.cursor = incrementer.reverse(self.cursor, self.cards)
+    def apply(self, cursor: int, iterations: int) -> int:
+        self.relative_offset %= self.cards
+        self.relative_step_size %= self.cards
+
+        # https://www.reddit.com/r/adventofcode/comments/ee0rqi/2019_day_22_solutions/fbnkaju/
+        step_size = pow(self.relative_step_size, iterations, self.cards)
+        offset = (self.relative_offset * (1 - step_size)
+                  * self.inverse((1 - self.relative_step_size) % self.cards)) % self.cards
+
+        return (offset + cursor * step_size) % self.cards
 
 
 def execute_instructions(deck, instructions: [(int, int)]):
@@ -187,22 +191,10 @@ def part1():
 
 
 def part2():
-    instructions = get_instructions()[::-1]
-
-    deck: BackPropagatingDeck = BackPropagatingDeck(2020, 119315717514047)
-    history = set()
-
-    i = 0
-    while deck.cursor not in history:
-        history.add(deck.cursor)
-
-        i += 1
-        if i % 10_000 == 0:
-            print(f'Processed {i}...')
-
-        execute_instructions(deck, instructions)
-
-    print(f'Found: {i} -> {deck.cursor}')
+    instructions = get_instructions()
+    deck: BackPropagatingDeck = BackPropagatingDeck(119315717514047)
+    execute_instructions(deck, instructions)
+    print(f'Value at 2020 after 101741582076661 iterations: {deck.apply(2020, 101741582076661)}')
 
 
 if __name__ == '__main__':
