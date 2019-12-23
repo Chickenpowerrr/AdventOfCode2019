@@ -83,6 +83,9 @@ class Computer:
                     print(self)
                 sys.exit()
 
+            if self.debug:
+                print(f'Executing: {instruction} at {self.cursor}')
+
             cursor_move = instruction.execute(raw[1])
             self.cursor = (
                 cursor_move if cursor_move is not None else self.cursor + len(instruction))
@@ -105,6 +108,9 @@ class Computer:
             sys.exit()
         if position >= len(self._instructions):
             self._instructions.extend([0 for _ in range(0, position - len(self._instructions) + 1)])
+
+        if self.debug:
+            print(f'Updating: {position} -> {value_position}')
 
         self._instructions[position] = value_position
 

@@ -66,6 +66,13 @@ class SimulatedIncrementer:
         sorted_head = list(sorted(order))
         return list(map(sorted_head.index, order))
 
+    def reverse(self, target: int, cards: int):
+        found_row = self.order[target % self.n]
+        relative = target // self.n
+
+        difference = (cards - self.base) // self.n
+        return sum([row + difference for row in self.base_rows][:found_row]) + relative
+
     def apply(self, target: int, cards: int) -> int:
         difference = (cards - self.base) // self.n
         rows = [row + difference for row in self.base_rows]
@@ -113,6 +120,34 @@ class SimulatedDeck:
         self.target = incrementer.apply(self.target, self.cards)
 
 
+class BackPropagatingDeck:
+    INCREMENTERS: {(int, int): SimulatedIncrementer} = {}
+
+    def __init__(self, cursor: int, cards: int):
+        self.cursor = cursor
+        self.cards = cards
+
+    def new_stack(self):
+        self.cursor = self.cards - self.cursor - 1
+
+    def cut(self, n: int):
+        if n > 0:
+            if n > self.cards - self.cursor - 1:
+                self.cursor -= self.cards - n
+            else:
+                self.cursor += n
+        else:
+            self.cut(self.cards + n)
+
+    def increment(self, n: int):
+        modulo = self.cards % n
+        if (n, modulo) not in self.INCREMENTERS:
+            self.INCREMENTERS[(n, modulo)] = SimulatedIncrementer(n, modulo)
+
+        incrementer = self.INCREMENTERS[(n, modulo)]
+        self.cursor = incrementer.reverse(self.cursor, self.cards)
+
+
 def execute_instructions(deck, instructions: [(int, int)]):
     for instruction in instructions:
         if instruction[0] == 1:
@@ -152,18 +187,22 @@ def part1():
 
 
 def part2():
-    deck: SimulatedDeck = SimulatedDeck()
-    instructions = get_instructions()
-    started = False
-    i = 0
-    history = set()
-    while not started or deck.target not in history:
-        i += 1
-        started = True
+    instructions = get_instructions()[::-1]
 
-        history.add(deck.target)
+    deck: BackPropagatingDeck = BackPropagatingDeck(2020, 119315717514047)
+    history = set()
+
+    i = 0
+    while deck.cursor not in history:
+        history.add(deck.cursor)
+
+        i += 1
+        if i % 10_000 == 0:
+            print(f'Processed {i}...')
+
         execute_instructions(deck, instructions)
-    print('Done!')
+
+    print(f'Found: {i} -> {deck.cursor}')
 
 
 if __name__ == '__main__':
