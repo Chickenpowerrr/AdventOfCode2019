@@ -18,28 +18,16 @@ class DroidScriptHandler:
             return self.handle_input()
 
     def handle_output(self, output: int):
-        try:
-            character = str(chr(output))
-            if character != '\n':
-                self.line += character
-            else:
-                print(self.line)
-                self.line = ''
-        except ValueError:
-            print(f'Amount of hull damage: {output}')
+        character = str(chr(output))
+        if character != '\n':
+            self.line += character
+        else:
+            print(self.line)
+            self.line = ''
 
 
-def part1():
+if __name__ == '__main__':
     instructions = INSTRUCTIONS.copy()
     droidScript: DroidScriptHandler = DroidScriptHandler()
     computer: Computer = Computer(instructions, droidScript.handle_input, droidScript.handle_output)
     computer.execute()
-
-
-def part2():
-    pass
-
-
-if __name__ == '__main__':
-    part1()
-    part2()
